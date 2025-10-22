@@ -195,7 +195,7 @@ class SpheroController:
                     #for i in range(self.joystick.get_numbuttons()):
                     #    button = self.joystick.get_button(i)
                     #    print(f"Button {i}: {button}")
-
+                    
 
                     if (self.joystick.get_button(buttons['1']) == 1):
                         self.speed = 50
