@@ -4,30 +4,38 @@
 #include "dynamix.h"
 
 int criticalNote = NOTE_C4;
-float criticalVoltage = 11.5 ;
+float criticalVoltage = 11.0;
 
 unsigned long lastBatteryCheck = 0;
-bool dynamixelStarted =  false;
+bool dynamixelStarted = false;
+
 
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Launching IMU");
   IMU.begin();
-  Serial.println("Playing start melody");
-  playSequence(DarthVader, noteDurations_DarthVader);
-  pinMode( led_pin, OUTPUT );
-  
-  
+  pinMode(led_pin, OUTPUT);
+
+
+
   dynamixelStarted = checkDynamixel();
 
   if (dynamixelStarted == false) {
     Serial.println("Dynamixels not initiated.");
   }
 
+  if (dynamixelStarted == true) {
+    setMode(1, 0);
+    setMode(2, 0);
+    setVelocity(0, 0);
+  }
+
+  Serial.println("Playing start melody");
+  playSequence(DarthVader, noteDurations_DarthVader);
 }
 
-bool checkCriticalBattery(){
+bool checkCriticalBattery() {
   float voltage = getBatteryVoltage();
   Serial.println("Executed: checkCriticalBattery ");
 
@@ -40,34 +48,55 @@ bool checkCriticalBattery(){
 }
 
 
-void printIMU(){
-    float roll = getRoll();
-    float yaw = getYaw();
-    float pitch = getPitch();
-    Serial.println("Roll:" + String(roll) + ",Pitch:" + String(pitch) + ",Yaw:" + String(yaw));
+void printIMU() {
+  float roll = getRoll();
+  float yaw = getYaw();
+  float pitch = getPitch();
+  Serial.println("Roll:" + String(roll) + ",Pitch:" + String(pitch) + ",Yaw:" + String(yaw));
 }
 
 
 void loop() {
 
 
-    bool criticalVoltage = false;
+  bool criticalVoltage = false;
 
-    float voltage = getBatteryVoltage();
-    
-    // Controleer of er 60 seconden voorbij zijn sinds de laatste batterijcheck
-    if (millis() - lastBatteryCheck >= 60000) {
-        lastBatteryCheck = millis();           // Reset timer
-        criticalVoltage = checkCriticalBattery();  // Controleer opnieuw
-    }
+  float voltage = getBatteryVoltage();
 
-    if (dynamixelStarted == false) {
-      Serial.println("Problems with dynamixels");
-      delay(1000);
-    }
+  // Controleer of er 60 seconden voorbij zijn sinds de laatste batterijcheck
+  if (millis() - lastBatteryCheck >= 60000) {
+    lastBatteryCheck = millis();               // Reset timer
+    criticalVoltage = checkCriticalBattery();  // Controleer opnieuw
+  }
 
-    printIMU();
-    Serial.println("Voltage: " + String(voltage) + " V");
+  if (dynamixelStarted == false) {
+    Serial.println("Problems with dynamixels");
+    delay(1000);
+  }
 
-    delay(1000);  
+  printIMU();
+  Serial.println("Voltage: " + String(voltage) + " V");
+
+  //drive(50, -50, 1);
+  //drive(0, 0, 1);
+  //drive(-50, 50, 1);
+
+ //Serial.println("Turn clockwise");
+    //turn(90);
+    //delay(500);
+    //Serial.println("Turn counterClockwise");
+    //turn(-90);
+  bool SW1State = getSW1State();
+  bool SW2State = getSW2State();
+
+  if (SW1State == 1){
+    drive(50, -50, 1);
+  }
+    if (SW2State == 1){
+    drive(-50, 50, 1);
+  }
+
+  Serial.print(String(SW1State) + "," + String(SW2State));
+  delay(20);  
+
 }
