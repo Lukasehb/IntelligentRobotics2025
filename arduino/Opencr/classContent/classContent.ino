@@ -7,7 +7,7 @@ void setup() {
   Serial.println("Launching IMU");
   IMU.begin();
   Serial.println("Playing start melody");
-  playSequence(HappyBirthday,noteDurations_HappyBirthday);
+  playSequence(DarthVader,noteDurations_DarthVader);
   pinMode( led_pin, OUTPUT );
 }
 
