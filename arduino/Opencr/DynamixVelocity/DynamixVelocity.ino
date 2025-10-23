@@ -22,23 +22,23 @@
   #define DEVICE_NAME "3" //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
 #elif defined(__OPENCR__)
   #define DEVICE_NAME ""
-#endif          
+#endif   
 
 #define BAUDRATE  1000000
+#define DXL_ID    1
 
 DynamixelWorkbench dxl_wb;
 
-bool checkDynamixel() 
+void setup() 
 {
   Serial.begin(57600);
-  while(!Serial); // Wait for Opening Serial Monitor
+  // while(!Serial); // Wait for Opening Serial Monitor
 
-  const char *log = NULL;
+  const char *log;
   bool result = false;
 
-  uint8_t scanned_id[16];
-  uint8_t dxl_cnt = 0;
-  uint8_t range = 100;
+  uint8_t dxl_id = DXL_ID;
+  uint16_t model_number = 0;
 
   result = dxl_wb.init(DEVICE_NAME, BAUDRATE, &log);
   if (result == false)
@@ -49,37 +49,49 @@ bool checkDynamixel()
   else
   {
     Serial.print("Succeeded to init : ");
-    Serial.println(BAUDRATE);
+    Serial.println(BAUDRATE);  
   }
 
-  Serial.println("Wait for scan...");
-  result = dxl_wb.scan(scanned_id, &dxl_cnt, range, &log);
+  result = dxl_wb.ping(dxl_id, &model_number, &log);
   if (result == false)
   {
     Serial.println(log);
-    Serial.println("Failed to scan");
-    return false;
+    Serial.println("Failed to ping");
   }
   else
   {
-    Serial.print("Find ");
-    Serial.print(dxl_cnt);
-    Serial.println(" Dynamixels");
-    int counter = 0;
-    for (int cnt = 0; cnt < dxl_cnt; cnt++)
+    Serial.println("Succeeded to ping");
+    Serial.print("id : ");
+    Serial.print(dxl_id);
+    Serial.print(" model_number : ");
+    Serial.println(model_number);
+  }
+
+  result = dxl_wb.wheelMode(dxl_id, 0, &log);
+  if (result == false)
+  {
+    Serial.println(log);
+    Serial.println("Failed to change wheel mode");
+  }
+  else
+  {
+    Serial.println("Succeed to change wheel mode");
+    Serial.println("Dynamixel is moving...");
+
+    for (int count = 0; count < 3; count++)
     {
-      counter++;
-      Serial.print("id : ");
-      Serial.print(scanned_id[cnt]);
-      Serial.print(" model name : ");
-      Serial.println(dxl_wb.getModelName(scanned_id[cnt]));
+      dxl_wb.goalVelocity(dxl_id, (int32_t)-100);
+      delay(3000);
+
+      dxl_wb.goalVelocity(dxl_id, (int32_t)100);
+      delay(3000);
     }
-    if (counter >=1) {
-      return true;
-    } else {
-      return false;
-    }
-  }  
+
+    dxl_wb.goalVelocity(dxl_id, (int32_t)0);
+  }
 }
 
+void loop() 
+{
 
+}
