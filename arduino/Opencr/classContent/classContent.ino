@@ -4,7 +4,7 @@
 #include "dynamix.h"
 
 int criticalNote = NOTE_C4;
-float criticalVoltage = 11.0;
+float criticalVoltage = 11.5;
 
 unsigned long lastBatteryCheck = 0;
 bool dynamixelStarted = false;
