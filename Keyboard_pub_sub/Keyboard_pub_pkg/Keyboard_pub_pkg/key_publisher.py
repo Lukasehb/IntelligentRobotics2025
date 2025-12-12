@@ -6,20 +6,24 @@ from std_msgs.msg import String
 def get_key():
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
-    tty.setraw(fd)
-    k = sys.stdin.read(1)
-    termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    try:
+        tty.setraw(fd)
+        k = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
     return k
 
 class KeyPublisher(Node):
     def __init__(self):
         super().__init__('key_publisher')
         self.pub = self.create_publisher(String, '/robot_key', 10)
+        self.get_logger().info("Keyboard controller actief. Gebruik 'z','s','a','x' om te sturen en 'q' om te stoppen.")
 
     def loop(self):
         while True:
             k = get_key()
-            if k in ['z','s','a','e','x','q']:
+            # We sturen de toets door als hij in onze lijst staat
+            if k in ['z', 's', 'a', 'e', 'x', 'q']:
                 self.pub.publish(String(data=k))
             if k == 'q':
                 break
@@ -27,6 +31,10 @@ class KeyPublisher(Node):
 def main():
     rclpy.init()
     n = KeyPublisher()
-    n.loop()
-    n.destroy_node()
-    rclpy.shutdown()
+    try:
+        n.loop()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        n.destroy_node()
+        rclpy.shutdown()
